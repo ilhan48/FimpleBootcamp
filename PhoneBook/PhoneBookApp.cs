@@ -118,7 +118,7 @@
 
             if (foundContacts.Count == 0)
             {
-                Console.WriteLine("No matching contacts found.");
+                Console.WriteLine("Eşleşen bir arama bulunamadı.");
             }
             else
             {
