@@ -1,10 +1,11 @@
-﻿using System;
-
-public class Program
+﻿namespace PhoneBook
 {
-    static void Main()
+    public class Program
     {
-        PhoneBookApp phoneBookApp = new();
-        phoneBookApp.Start();
+        static void Main()
+        {
+            PhoneBookApp phoneBookApp = new PhoneBookApp();
+            phoneBookApp.Start();
+        }
     }
 }

@@ -9,9 +9,9 @@ namespace PhoneBook
     public interface IPhoneBook
     {
         public void AddContact(Contact contact);
-        public void RemoveContact(Contact contact);
-        public void UpdateContact(Contact oldContact, Contact newContact);
-        List<Contact> GetAllContacts();
-        List<Contact> SearchContacts(string keyword);
+        public void RemoveContact(string keyword);
+        public void UpdateContact(string keyword);
+        List<Contact> GetContacts(int sortOrder);
+        List<Contact> SearchContacts(string keyword, int searchType);
     }
 }
