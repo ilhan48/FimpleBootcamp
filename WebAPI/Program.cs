@@ -1,5 +1,4 @@
 ﻿using WebAPI.Source.Business;
-using JsonPatchSample;
 using Microsoft.AspNetCore.Mvc.Formatters;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -7,10 +6,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 builder.Services.AddSingleton<IUserService, UserManager>();
-builder.Services.AddControllers(options =>
-{
-    options.InputFormatters.Insert(0, MyJPIF.GetJsonPatchInputFormatter());
-});
+builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.JsonPatch;
+using Microsoft.AspNetCore.Mvc;
 using WebAPI.Source.Business;
 using WebAPI.Source.Entities;
 
@@ -18,77 +19,122 @@ public class UsersController : ControllerBase
     }
     // ! Burada GetAll metodunu kullanarak tüm kullanıcıları listeliyoruz.
     [HttpGet("getall")]
-    public IActionResult GetAll()
+    public IActionResult GetAll([FromQuery] string sortBy)
     {
-        var result = _userService.GetAll();
-        if (result==null)
+        try
+    {
+        // Kullanıcı servisinden sıralanmış kullanıcı listesini al
+        var userList = _userService.GetAll(sortBy);
+
+        if (userList == null || userList.Count() == 0)
         {
-            return BadRequest();
+            return NotFound("Sıralanmış kullanıcı listesi bulunamadı."); // HTTP 404 Not Found
         }
-        else
-        {
-            return Ok(result);
-        }
+
+        return Ok(userList); // HTTP 200 OK
+    }
+    catch (Exception ex)
+    {
+        return StatusCode(500, $"Bir hata oluştu: {ex.Message}"); // HTTP 500 Internal Server Error
+    }
         
     }
     // ! Burada GetById metodunu kullanarak bir kullanıcıyı buluyoruz.
-    [HttpGet("getbyid")]
-    public IActionResult GetById(int id)
-    {
-        var result = _userService.GetById(id);
-        if (result == null) {  return BadRequest(); }
-        return Ok(result);
-    }
+    [HttpGet("{id}")]
+        public IActionResult GetById(int id)
+        {
+            var result = _userService.GetById(id);
+            if (result == null)
+            {
+                return NotFound(); // HTTP 404 Not Found
+            }
+            return Ok(result); // HTTP 200 OK
+        }
+
     // ! Burada Add metodunu kullanarak bir kullanıcı ekliyoruz.
     [HttpPost("add")]
-    public IActionResult Add(User user)
+        public IActionResult Add([FromBody] User user)
     {
-        if(_userService.GetAll().Contains(user)) {
-            return BadRequest();
-        } else {
+        if (user == null)
+        {
+            return BadRequest(); // HTTP 400 Bad Request
+        }
+
+        // Model binding 
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState); // HTTP 400 Bad Request
+        }
+
+        if (!_userService.GetAll("id").Any(u => u.Id == user.Id))
+        {
             _userService.Add(user);
-            return Ok(); 
+            return CreatedAtAction(nameof(GetById), new { id = user.Id }, user); // HTTP 201 Created
         }
+
+        return Conflict(); // HTTP 409 Conflict
     }
+
     // ! Burada Delete metodunu kullanarak bir kullanıcı siliyoruz.
-    [HttpDelete("delete")]
-    public IActionResult Delete(User user)
-    {
-        if(!_userService.GetAll().Contains(user)) {
-            return BadRequest();
-        } else {
+    [HttpDelete("delete/{id}")]
+        public IActionResult Delete(int id)
+        {
+            var user = _userService.GetById(id);
+            if (user == null)
+            {
+                return NotFound(); // HTTP 404 Not Found
+            }
+
             _userService.Delete(user);
-            return Ok(); 
+            return NoContent(); // HTTP 204 No Content
         }
-    }
     // ! Burada Update metodunu kullanarak bir kullanıcıyı güncelliyoruz.
-    [HttpPut("update")]
-    public IActionResult Update(User user)
-    {
-        if(_userService.GetAll().Contains(user)) {
-            return BadRequest();
-        } else {
+    [HttpPut("update/{id}")]
+        public IActionResult Update(int id, [FromBody] User user)
+        {
+            if (user == null || user.Id != id)
+            {
+                return BadRequest(); // HTTP 400 Bad Request
+            }
+
+            // Model binding işlemi kontrolü
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState); // HTTP 400 Bad Request
+            }
+
+            var existingUser = _userService.GetById(id);
+            if (existingUser == null)
+            {
+                return NotFound(); // HTTP 404 Not Found
+            }
+
             _userService.Update(user);
-            return Ok(); 
+            return NoContent(); // HTTP 204 No Content
         }
-    }
-    
-    [HttpPatch("{id}")]
-public IActionResult UpdateUserEmail(int id, [FromBody] JsonPatchDocument<UserDto> patch)
-{
-    var user = _userService.GetById(id);
-    if (user == null)
-    {
-        return NotFound();
-    }
-    var userDto = _userService.Map<UserDto>(user);
-    // Apply the patch to the user DTO
-    patch.ApplyTo(userDto);
-    // Update the user's email in the database
-    user.Email = userDto.Email;
-    _userService.Update(user);
-    return Ok(user);
-}
+
+        [HttpPatch("update-email/{id}")]
+        public IActionResult UpdateUserEmail(int id, [FromBody] JsonPatchDocument<UserDto> patch)
+        {
+            var user = _userService.GetById(id);
+            if (user == null)
+            {
+                return NotFound(); // HTTP 404 Not Found
+            }
+
+            var userDto = _userService.Map<UserDto>(user);
+            patch.ApplyTo(userDto);
+
+            // Model binding işlemi kontrolü
+            if (!TryValidateModel(userDto))
+            {
+                return BadRequest(ModelState); // HTTP 400 Bad Request
+            }
+
+            user.Email = userDto.Email;
+            _userService.Update(user);
+            return Ok(user); // HTTP 200 OK
+        }
     
 
 }

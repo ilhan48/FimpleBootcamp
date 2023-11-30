@@ -4,7 +4,6 @@ namespace WebAPI.Source.Business
 {
     public class UserManager : IUserService
     {
-        private readonly object _dbContext;
 
         // !! Fake data
         List<User> _userDal = new List<User>
@@ -24,10 +23,42 @@ namespace WebAPI.Source.Business
             System.Console.WriteLine("User deleted");
         }
         // ! Tüm kullanıcıları listeleme senaryosu
-        public List<User> GetAll()
+       public List<User> GetAll(string sortBy)
         {
-            return _userDal;
+            if (sortBy == "id")
+            {
+                _userDal.Sort((x, y) => x.Id.CompareTo(y.Id));
+                return _userDal;
+            }
+
+
+            else if (sortBy == "firstName")
+            {
+                _userDal.Sort((x, y) => x.FirstName.CompareTo(y.FirstName));
+                return _userDal;
+            }
+            else if (sortBy == "lastName")
+            {
+                _userDal.Sort((x, y) => x.LastName.CompareTo(y.LastName));
+                return _userDal;
+            }
+            else if (sortBy == "email")
+            {
+                _userDal.Sort((x, y) => x.Email.CompareTo(y.Email));
+                return _userDal;
+            }
+            else if (sortBy == "password")
+            {
+                _userDal.Sort((x, y) => x.Password.CompareTo(y.Password));
+                return _userDal;
+            }
+            else
+            {
+                return _userDal;
+            }
+            
         }
+
         // ! Id'ye göre kullanıcı bulma senaryosu
         public User GetById(int id)
         {
