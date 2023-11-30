@@ -1,8 +1,11 @@
 using System.Collections.Generic;
+using WebAPI.Source.Entities;
 namespace WebAPI.Source.Business
 {
     public class UserManager : IUserService
     {
+        private readonly object _dbContext;
+
         // !! Fake data
         List<User> _userDal = new List<User>
         {
@@ -40,5 +43,15 @@ namespace WebAPI.Source.Business
             userToUpdate.Password = user.Password;
             System.Console.WriteLine("User updated");
         }
+
+      // ! Map fonksiyonu User-> UserDto
+        public UserDto Map<T>(User user)
+        {
+            UserDto userDto = new UserDto();
+            userDto.Email = user.Email;
+            userDto.Password = user.Password;
+            return userDto;
+        }
+        
     }
 }

@@ -1,5 +1,5 @@
 ﻿
-namespace WebAPI;
+namespace WebAPI.Source.Entities;
 
 public class User
 {

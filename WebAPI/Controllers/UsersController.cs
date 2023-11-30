@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using WebAPI.Source.Business;
+using WebAPI.Source.Entities;
 
 namespace WebAPI.Controllers;
 /*
@@ -50,7 +51,7 @@ public class UsersController : ControllerBase
         }
     }
     // ! Burada Delete metodunu kullanarak bir kullanıcı siliyoruz.
-    [HttpPost("delete")]
+    [HttpDelete("delete")]
     public IActionResult Delete(User user)
     {
         if(!_userService.GetAll().Contains(user)) {
@@ -61,7 +62,7 @@ public class UsersController : ControllerBase
         }
     }
     // ! Burada Update metodunu kullanarak bir kullanıcıyı güncelliyoruz.
-    [HttpPost("update")]
+    [HttpPut("update")]
     public IActionResult Update(User user)
     {
         if(_userService.GetAll().Contains(user)) {
@@ -71,6 +72,24 @@ public class UsersController : ControllerBase
             return Ok(); 
         }
     }
+    
+    [HttpPatch("{id}")]
+public IActionResult UpdateUserEmail(int id, [FromBody] JsonPatchDocument<UserDto> patch)
+{
+    var user = _userService.GetById(id);
+    if (user == null)
+    {
+        return NotFound();
+    }
+    var userDto = _userService.Map<UserDto>(user);
+    // Apply the patch to the user DTO
+    patch.ApplyTo(userDto);
+    // Update the user's email in the database
+    user.Email = userDto.Email;
+    _userService.Update(user);
+    return Ok(user);
+}
+    
 
 }
 

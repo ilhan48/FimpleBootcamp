@@ -1,3 +1,5 @@
+using WebAPI.Source.Entities;
+
 namespace WebAPI.Source.Business
 {
     public interface IUserService
@@ -7,5 +9,6 @@ namespace WebAPI.Source.Business
         void Add(User user);
         void Update(User user);
         void Delete(User user);
+        UserDto Map<T>(User user);
     }
 }
